@@ -1,0 +1,212 @@
+Explication du notebook CNN
+===========================
+
+1. Objectif général
+-------------------
+Ce notebook entraîne un modèle de classification d’images de type CNN sur un jeu de données organisé en dossiers.
+Le but est de :
+- charger les données d’entraînement et de validation ;
+- entraîner un réseau de neurones convolutif ;
+- suivre les métriques à chaque époque ;
+- sauvegarder les résultats dans un fichier JSON.
+
+
+2. Préparation des données
+--------------------------
+Le notebook commence par extraire une archive contenant les images.
+Ensuite, il définit :
+- un dossier train pour l’entraînement ;
+- un dossier test/long_range (ou un autre sous-dossier) pour la validation.
+
+Les images sont transformées avant d’être envoyées au modèle :
+- conversion en niveaux de gris ;
+- redimensionnement en 32x32 ;
+- conversion en tenseur PyTorch.
+
+ 
+
+3. Structure du dataset
+-----------------------
+Le chargement est fait avec ImageFolder.
+Cela signifie que chaque sous-dossier correspond à une classe.
+Exemple :
+train/
+  0/
+  1/
+  2/
+  ...
+
+Le modèle apprend donc à associer chaque image au bon dossier-classe.
+
+
+4. Architecture du modèle CNN
+-----------------------------
+Le modèle utilisé est un CNN composé de deux grandes parties :
+- un extracteur de caractéristiques (features) ;
+- un classifieur final (classifier).
+
+4.1. Partie convolutionnelle
+Le réseau contient 3 blocs principaux.
+
+Bloc 1 :
+- Conv2d(1 -> 32)
+- BatchNorm2d
+- ReLU
+- Conv2d(32 -> 32)
+- BatchNorm2d
+- ReLU
+- MaxPool2d
+- Dropout2d
+
+Bloc 2 :
+- Conv2d(32 -> 64)
+- BatchNorm2d
+- ReLU
+- Conv2d(64 -> 64)
+- BatchNorm2d
+- ReLU
+- MaxPool2d
+- Dropout2d
+
+Bloc 3 :
+- Conv2d(64 -> 128)
+- BatchNorm2d
+- ReLU
+- Conv2d(128 -> 128)
+- BatchNorm2d
+- ReLU
+- MaxPool2d
+- Dropout2d
+
+À la fin, un AdaptiveAvgPool2d((1,1)) réduit chaque carte de caractéristiques à une seule valeur moyenne.
+
+4.2. Partie classification
+Après l’extraction des caractéristiques :
+- Flatten : transforme la sortie en vecteur ;
+- Linear(128 -> 64) ;
+- ReLU ;
+- Dropout ;
+- Linear(64 -> num_classes).
+
+Le nombre de sorties final est égal au nombre de classes du dataset.
+
+
+5. Rôle des composants du CNN
+-----------------------------
+- Convolution : détecte des motifs locaux dans l’image (bords, textures, formes simples).
+- ReLU : ajoute de la non-linéarité.
+- BatchNorm : stabilise l’apprentissage et accélère souvent la convergence.
+- MaxPool : réduit la taille spatiale et garde les informations les plus importantes.
+- Dropout / Dropout2d : désactive aléatoirement certaines activations pendant l’entraînement pour réduire l’overfitting.
+- AdaptiveAvgPool : remplace un gros flatten spatial par une réduction plus compacte.
+- Linear : effectue la décision finale de classification.
+
+
+6. Logique générale du CNN
+--------------------------
+Le fonctionnement peut se résumer ainsi :
+1. l’image entre dans le réseau ;
+2. les convolutions extraient progressivement des caractéristiques de plus en plus complexes ;
+3. les couches de pooling réduisent la dimension spatiale ;
+4. la dernière partie transforme ces caractéristiques en scores pour chaque classe ;
+5. la classe prédite est celle qui a le score le plus élevé.
+
+
+7. Fonction de coût
+-------------------
+Le notebook utilise CrossEntropyLoss.
+Cette fonction compare les scores produits par le modèle avec la vraie classe.
+Elle pénalise les mauvaises prédictions et guide l’apprentissage.
+
+
+8. Optimisation
+---------------
+L’optimiseur utilisé est AdamW.
+Son rôle est de mettre à jour les poids du réseau pour diminuer la loss.
+
+Le notebook utilise aussi un scheduler : ReduceLROnPlateau.
+Si la performance en validation cesse d’améliorer, le learning rate est réduit.
+Cela permet souvent d’obtenir une convergence plus stable en fin d’entraînement.
+
+
+9. Déroulement d’une époque d’entraînement
+------------------------------------------
+Pour chaque époque :
+- le modèle passe en mode train ;
+- il lit les mini-batchs du train_loader ;
+- il fait une prédiction ;
+- il calcule la loss ;
+- il fait la rétropropagation (backpropagation) ;
+- il met à jour les poids.
+
+Les métriques calculées à l’entraînement sont :
+- train_loss ;
+- train_acc.
+
+
+10. Évaluation en validation
+----------------------------
+Après chaque époque, le modèle est évalué sur le jeu de validation.
+Les métriques calculées sont :
+- val_loss ;
+- val_acc ;
+- val_f1 (F1-score macro).
+
+À la fin, le notebook calcule aussi :
+- la précision par classe ;
+- le rappel par classe ;
+- le F1-score par classe ;
+- le support par classe ;
+- la matrice de confusion.
+
+
+11. Signification des métriques
+-------------------------------
+- Loss : mesure globale de l’erreur du modèle.
+- Accuracy top-1 : proportion d’images bien classées.
+- F1 macro : moyenne des F1 de chaque classe, utile si les classes sont déséquilibrées.
+- Précision : parmi les éléments prédits dans une classe, combien sont corrects.
+- Rappel : parmi les vrais éléments d’une classe, combien ont été retrouvés.
+- Support : nombre réel d’exemples dans chaque classe.
+- Matrice de confusion : tableau montrant les confusions entre classes.
+
+
+12. Early stopping
+------------------
+Le notebook utilise aussi un early stopping.
+Si la validation n’améliore plus pendant plusieurs époques (patience), l’entraînement s’arrête.
+Cela évite de continuer à surapprendre inutilement.
+
+
+13. Sauvegarde des résultats
+----------------------------
+Les résultats sont enregistrés dans un fichier JSON contenant notamment :
+- le nom du modèle ;
+- le nom du dataset ;
+- le nombre de paramètres entraînables ;
+- l’historique des métriques à chaque époque ;
+- les meilleures performances ;
+- les métriques par classe ;
+- la matrice de confusion.
+
+Ce fichier facilite l’analyse et la comparaison entre plusieurs expériences.
+
+
+14. Nombre de paramètres
+------------------------
+Le modèle contient environ 295 000 paramètres entraînables (cela dépend légèrement du nombre de classes).
+C’est un modèle relativement léger, adapté à des images de petite taille comme 32x32.
+
+
+15. Résumé simple
+-----------------
+Ce notebook suit la logique suivante :
+- préparation des images ;
+- chargement du dataset ;
+- définition d’un CNN ;
+- entraînement avec AdamW ;
+- réduction automatique du learning rate ;
+- évaluation détaillée en validation ;
+- sauvegarde de tous les résultats dans un JSON.
+
+En résumé, le modèle apprend à reconnaître automatiquement des classes d’images à partir de motifs visuels extraits par les couches convolutives.
