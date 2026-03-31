@@ -6,8 +6,8 @@ Une extraction de 10 classes. 5 dont nous avons jugé adapté pour la texture et
 Architecture Globale
 
 1 Extraction et Projection des Patches (Patch Embedding)
-L'image d'entrée (64×64×3 canaux) est partitionnée en patches de taille 8×8 pixels.
-Chaque patch, est projeté linéairement vers un espace d'embedding de 192 dimensions.
+L'image d'entrée (64×64×3 canaux) est partitionnée en patches de taille 8×8 pixels. Patch embedding convolutif hybride : Convolution dans la formation des patches + agrégation dynamique des features voisines pour capturer la localité spatiale
+Chaque patch, est projeté vers un espace d'embedding de 192 dimensions .
 
 2 Token de Classification et Embeddings Positionnels
 Token CLS : Un vecteur de 192 dimensions est préfixé à la séquence de patches, formant une séquence de 65 embeddings [CLS, patch1, ..., patch8].
@@ -28,4 +28,4 @@ Quatre couches TransformerEncoderLayer identiques, chacune comprenant :
 
 4 Tête de Classification
 Extraction : Seul le token CLS raffiné
-Projection finale : Couche linéaire Linear(192 → 10) produisant les logits de classification.
+Projection finale : MLP Convolutif produisant les logits de classification.

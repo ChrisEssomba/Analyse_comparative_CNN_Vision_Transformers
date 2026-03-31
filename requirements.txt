@@ -1,0 +1,13 @@
+pandas
+numpy
+scikit-learn
+matplotlib
+jinja2
+torch
+torchvision
+torchmetrics
+lightning
+pytorch_lightning
+pdb
+pillow
+tqdm
