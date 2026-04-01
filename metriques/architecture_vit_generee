@@ -1,0 +1,37 @@
+digraph ViT_Architecture {
+	fontname=Helvetica rankdir=TB size="8,10"
+	node [color="#333333" fillcolor="#f9f9f9" fontname=Helvetica shape=box style="filled, rounded"]
+	Image [label="Image en Entrée
+(32x32 pixels)" fillcolor="#dbeafe"]
+	Patching [label="Découpage en Patchs
+(ex: 64 patchs de 4x4)"]
+	Flatten [label="Aplatissement (Flatten)"]
+	Linear [label="Projection Linéaire
+(Patch Embeddings)" fillcolor="#fef08a"]
+	CLS [label="Ajout du Token [CLS]" fillcolor="#fca5a5" shape=ellipse]
+	Pos [label="Ajout des Position Embeddings" fillcolor="#fca5a5" shape=ellipse]
+	subgraph cluster_transformer {
+		color=gray fontname="Helvetica-Bold" label="Transformer Encoder (Répété N fois)" style=dashed
+		Norm1 [label="Layer Norm"]
+		MSA [label="Multi-Head Self-Attention" fillcolor="#bbf7d0"]
+		Norm2 [label="Layer Norm"]
+		MLP [label="MLP (Feed Forward)" fillcolor="#e9d5ff"]
+		Norm1 -> MSA
+		MSA -> Norm2
+		Norm2 -> MLP
+	}
+	Extract [label="Extraction du Token [CLS]"]
+	Head [label="Tête de Classification
+(Couche Linéaire)" fillcolor="#fed7aa"]
+	Output [label="Prédictions
+(5 Classes)" fillcolor="#dbeafe" shape=ellipse]
+	Image -> Patching
+	Patching -> Flatten
+	Flatten -> Linear
+	Linear -> CLS
+	CLS -> Pos
+	Pos -> Norm1
+	MLP -> Extract
+	Extract -> Head
+	Head -> Output
+}
