@@ -1,11 +1,13 @@
 # A Comparative Analysis of CNN vs Vision Transformers
 
-## Authors
+## * Authors
 
-**Chris Essomba, Christopher BANFOU, Ivan BIBA** — University of Paris Cité
----
+**Chris Essomba, Christopher BANFOU, Ivan BIBA** — 
+University of Paris Cité
 
-## 📋 Project Overview
+
+
+## * Project Overview
 
 This project presents a comprehensive comparative analysis between **Convolutional Neural Networks (CNN)** and **Vision Transformers (ViT)** on image classification tasks. The study evaluates both architectures across different visual characteristics: texture-based features and long-range dependencies, using a curated dataset derived from Tiny-ImageNet-200.
 
@@ -13,7 +15,7 @@ The goal is to understand the strengths and weaknesses of each architecture in d
 
 ---
 
-## 🎯 Key Research Questions
+## * Key Research Questions
 
 - How do CNNs and Vision Transformers compare in texture classification tasks?
 - Which architecture better captures long-range dependencies in images?
