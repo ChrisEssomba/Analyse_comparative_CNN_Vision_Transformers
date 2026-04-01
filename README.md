@@ -1,4 +1,9 @@
-# A Comparative Analysis of CNN vs Vision Transformers (ViT)
+# A Comparative Analysis of CNN vs Vision Transformers
+
+## Authors
+
+**Chris Essomba, Christopher BANFOU, Ivan BIBA** — University of Paris Cité
+---
 
 ## 📋 Project Overview
 
